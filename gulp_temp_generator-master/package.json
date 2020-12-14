@@ -1,0 +1,24 @@
+{
+  "name": "gulp_temp_generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vue-element-admin-common-project/gulp_temp_generator.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vue-element-admin-common-project/gulp_temp_generator/issues"
+  },
+  "homepage": "https://github.com/vue-element-admin-common-project/gulp_temp_generator#readme",
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-ejs": "^4.1.1",
+    "through2": "^3.0.1"
+  }
+}

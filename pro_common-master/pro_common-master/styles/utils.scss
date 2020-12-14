@@ -1,0 +1,21 @@
+/** flex绝对居中 */
+@mixin flexAbsoluteCenter() {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin oneLineEllipsis() {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@mixin multiLineEllipsis($line) {
+  display: -webkit-box !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $line;
+}

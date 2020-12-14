@@ -1,0 +1,235 @@
+<!-- 搜索 FIXME 进行 修改 -->
+<% var datepicker = __genTemp.DateDurationPicker %>
+<% var rightBtnsBar = __genTemp.RightBtnsBar %>
+<% var filBarCon = filterBarConfig %>
+<% var tableCon = tableConfig %>
+<% var confirmDialog = __genTemp.ConfirmDialog %>
+<% var hasRightBtnsBar = rightBtnsBar && rightBtnsBar.length %>
+<% var hasOperationBtns = tableCon.operationBtns && tableCon.operationBtns.items %>
+<% var hasSwitchToggle = tableCon.columns.some(i => i.type == 'switchBtn') %>
+<% var hasNormalForm = confirmDialog && confirmDialog.hasForm %>
+<template>
+<div class="<%=__genTemp.wrapClass%>">
+<% if (datepicker) { %>
+  <DateDurationPicker @dateChange="dateChange" />
+<% } %>
+<% if (filBarCon.length) { %>
+  <!-- 搜索栏 -->
+  <FilterBar ref="filterBar" :config="filterBarConfig" @clickSearch="clickSearch" @reset="filterReset" />
+<% } %>
+<% if (hasRightBtnsBar) { %>
+  <!-- 偏右 功能按钮条 -->
+  <%
+  var string = ''
+  for (let i = 0, l = rightBtnsBar.length; i < l; i++) {
+    var item = rightBtnsBar[i]
+    string += `{ type: ${item.type || ''}, clickName: ${item.clickName || ''}, word: ${item.word || ''} }`
+  }
+  string = "[" + string + "]"
+  %>
+  <RightBtnsBar :config="<%= string %>" @clickBtn="clickRightBtn" />
+<% } %>
+  <!-- 表格 -->
+  <NormalTable :list="list" :config="tableConfig" :pending="listPending"
+               <%if (tableCon.selection) {%>:selection.sync="listSelection"<% } %>
+               <%if (hasSwitchToggle) { %>@switchToggle="switchToggle"<% } %>
+               <%if (hasOperationBtns) { %>@operationBtnsClick="operationBtnsClick"<% } %>
+               />
+  <!-- 分页 -->
+  <div style="display: flex;justify-content: flex-end;">
+    <Pagination :total="reqParam.total" :page.sync="reqParam.page"
+                :limit.sync="reqParam.limit" @pagination="getList" />
+  </div>
+<% if (confirmDialog) { %>
+    <!-- 弹窗 -->
+    <ConfirmDialog :title="dialogConfig.title" width="700px"
+                   :visible.sync="dialogConfig.visible"
+                   @cancelHandler="cancelHandler" @submitHandler="submitHandler">
+      <div style="padding: 0 30px;">
+<% if (hasNormalForm) { %>
+        <NormalForm ref="normalForm" :active="dialogConfig.visible" :config="formConfig" />
+<% } %>
+      </div>
+    </ConfirmDialog>
+<% } %>
+</div>
+</template>
+
+<script>
+<% if (datepicker) { %>import DateDurationPicker from '@pro_common/components/DateDurationPicker/DateDurationPicker.vue'<% } %>
+<% if (filBarCon.length) { %>import FilterBar from '@pro_common/components/FilterBar/FilterBar.vue'<% } %>
+<% if (hasRightBtnsBar) { %>import RightBtnsBar from "@pro_common/components/RightBtnsBar/RightBtnsBar.vue"<% } %>
+import NormalTable from '@pro_common/components/Tables/NormalTable.vue'
+import Pagination from '@pro_common/components/Pagination/Pagination.vue'
+<% if (confirmDialog) { %>import ConfirmDialog from '@pro_common/components/ConfirmDialog/ConfirmDialog.vue'<% } %>
+<% if (hasNormalForm) { %>import NormalForm from "@pro_common/components/NormalForm/NormalForm.vue"<% } %>
+import {<%if(filterBarConfig.length) { %>filterBarConfig, <% } %><% if(hasNormalForm) { %>formConfig, <% } %>tableConfig} from './configs'
+import deepClone from "@pro_common/utils/deepClone";
+import filterReqCreator from "@pro_common/utils/filterReqCreator";
+// import format10Ts2Txt from "@pro_common/utils/format10Ts2Txt";
+import { FIXME_REQUEST } from "@/api/FIXME_REQUEST_PATH";
+
+const EMPTY_REQ_PARAM = {
+<% for (let i = 0, l = filBarCon.length; i < l; i++) { %>
+  <%= filBarCon[i].valueKey %>: '', // TODO 待修正
+<% } %>
+<% if (datepicker) { %>
+  <%= datepicker[0] %>: null, // 开始时间
+  <%= datepicker[1] %>: 0, // 结束时间
+<% } %>
+}
+
+export default {
+  name: "<%=__genTemp.componentName%>",
+  data() {
+    return {
+      list: [],
+      listPending: false,
+      // 表格配置
+      tableConfig: deepClone(tableConfig),
+      <% if(tableCon.selection) { %>listSelection: [], // 列表中选中项<% } %>
+      reqParam: {
+        page: 1, // 页数 前端 从1开始
+        limit: 10, // 条数
+        total: 0, // 总条数
+        ...EMPTY_REQ_PARAM
+      },
+<% if (filBarCon.length) { %>
+      // 搜索栏配置
+      filterBarConfig: deepClone(filterBarConfig),
+<% } %>
+<% if (confirmDialog) { %>
+      dialogConfig: { // 弹窗配置
+        title: '新增公告',
+        visible: false
+      },
+<% } %>
+<% if (hasNormalForm) { %>
+      formConfig: deepClone(formConfig)
+<% } %>
+    }
+  },
+  methods: {
+    async getList() {
+      this.listPending = true
+      try {
+        const {data} = await FIXME_REQUEST({
+          start: (this.reqParam.page - 1) * this.reqParam.limit,
+          pageSize: this.reqParam.limit,
+          ...filterReqCreator(EMPTY_REQ_PARAM, this.reqParam)
+        })
+        const { list, total } = data
+        list.forEach(item => { // FIXME 需要转换的字段
+          // item.createdTxt = format10Ts2Txt(item.created, '{yyyy}-{mm}-{dd}')
+        })
+        this.list = list
+        // 修改分页数据
+        this.reqParam.total = total
+      } catch (e) { // 错误 则清空 列表
+        console.log(e)
+        this.list = []
+        this.reqParam.total = 0
+      } finally {
+        this.listPending = false
+      }
+    },
+<% if (filBarCon.length) { %>
+    clickSearch(obj) {
+      Object.keys(obj).forEach(key => {
+        this.reqParam[key] = obj[key]
+      })
+      // 重置分页
+      this.reqParam.page = 1
+      this.reqParam.total = 0
+      this.getList()
+    },
+    filterReset() { // 重置搜索
+      const FilterBar = this.$refs.filterBar
+      Object.keys(EMPTY_REQ_PARAM).forEach(key => {
+        FilterBar.$_setObj(key, EMPTY_REQ_PARAM[key])
+      })
+      FilterBar.$_clickSearch()
+    },
+<% } %>
+<% if (datepicker) { %>
+    dateChange(date) {
+      if (date === null) {
+        this.reqParam.<%= datepicker[0] %> = EMPTY_REQ_PARAM.<%= datepicker[0] %>
+        this.reqParam.<%= datepicker[1] %> = EMPTY_REQ_PARAM.<%= datepicker[1] %>
+      } else {
+        this.reqParam.<%= datepicker[0] %> = Math.floor(date[0].getTime() / 1000)
+        this.reqParam.<%= datepicker[1] %> = Math.floor(date[1].getTime() / 1000)
+      }
+      this.reqParam.page = 1 // 页数重置
+      this.reqParam.total = 0
+      this.getList()
+    },
+<% } %>
+<% if (hasOperationBtns) { %>
+    async operationBtnsClick(clickName, row) {
+<% var oprBtns = tableCon.operationBtns.items %>
+<% for (var i = 0, l = oprBtns.length; i < l; i++) { %>
+      if (clickName == "<%= oprBtns[i].clickName %>") {
+        // TODO 待填充
+        console.log(row)
+        return
+      }
+<% } %>
+    },
+<% } %>
+<% if (hasSwitchToggle) { %>
+    async switchToggle(key, row) {
+<% var switchList = tableCon.columns.filter(i => i.type == 'switchBtn') %>
+<% for (var i = 0, l = switchList.length; i < l; i++) { %>
+      if (key == "<%= switchList[i].key %>") {
+        // TODO 待填充
+        console.log(row)
+        return
+      }
+<% } %>
+    },
+<% } %>
+<% if (rightBtnsBar && rightBtnsBar.length) { %>
+    clickRightBtn(clickName) {
+<% for (var i = 0, l = rightBtnsBar.length; i < l; i++) { %>
+      if (clickName == "<%= rightBtnsBar[i].clickName %>") {
+        // TODO 待填充
+        return
+      }
+<% } %>
+    },
+<% } %>
+<% if (confirmDialog) { %>
+    cancelHandler(closeCb) {
+      closeCb()
+    },
+    async submitHandler(closeCb) {
+<% if (hasNormalForm) { %>
+      const {mode, model} = await this.$refs.normalForm.$_submit() // 前端表单验证
+      // 请求后端接口
+<% } %>
+      closeCb()
+    }
+<% } %>
+  },
+  async mounted() {
+    this.getList()
+  },
+  components: {
+    <% if (datepicker) { %>DateDurationPicker,<% } %>
+    <% if (filBarCon) { %>FilterBar,<% } %>
+    <% if (hasRightBtnsBar) { %>RightBtnsBar,<% } %>
+    NormalTable,
+    Pagination,
+    <% if (confirmDialog) { %>ConfirmDialog,<% } %>
+    <% if (hasNormalForm) { %>NormalForm,<% } %>
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.<%= __genTemp.wrapClass %> {
+  box-sizing: border-box;
+  padding: 20px;
+}
+</style>

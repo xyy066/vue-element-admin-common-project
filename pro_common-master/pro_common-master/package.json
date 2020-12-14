@@ -1,0 +1,33 @@
+{
+  "name": "pro_common",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint --ext .js,.vue src"
+  },
+  "lint-staged": {
+    "src/**/*.{js,vue}": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-eslint": "3.5.1",
+    "babel-eslint": "10.0.1",
+    "eslint": "5.15.3",
+    "eslint-plugin-vue": "5.2.2"
+  },
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=8.9",
+    "npm": ">= 3.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}
